@@ -13,8 +13,14 @@ export async function GET(request:Request) {
   const secret=process.env.SNAPTRADE_OAUTH_CLIENT_SECRET;
   const rawKey=process.env.SESSION_ENCRYPTION_KEY;
   const keyBytes=rawKey ? Buffer.from(rawKey,'base64') : null;
+  const missing=[
+    !clientId&&'SNAPTRADE_OAUTH_CLIENT_ID',
+    !secret&&'SNAPTRADE_OAUTH_CLIENT_SECRET',
+    !redirect&&'SNAPTRADE_REDIRECT_URI',
+    (!keyBytes||keyBytes.length!==32)&&'SESSION_ENCRYPTION_KEY',
+  ].filter((name):name is string=>Boolean(name));
   if(!clientId||!secret||!redirect||!keyBytes||keyBytes.length!==32) {
-    console.error('SnapTrade OAuth setup is incomplete: required server environment values are missing or invalid.');
+    console.error(`SnapTrade OAuth setup is incomplete. Missing or invalid server environment values: ${missing.join(', ')}`);
     return connectError(request,'setup');
   }
 
